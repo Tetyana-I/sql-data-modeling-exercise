@@ -1,5 +1,5 @@
 -- from the terminal run:
--- psql < music.sql
+-- psql < music_new.sql
 
 DROP DATABASE IF EXISTS music;
 
@@ -44,20 +44,20 @@ VALUES
 CREATE TABLE songs
 (
   id SERIAL PRIMARY KEY,
-  title TEXT NOT NULL,
+  song  TEXT NOT NULL,
   duration_in_seconds INTEGER NOT NULL,
-  album INTEGER REFERENCES albums ON DELETE NULL,
+  album INTEGER REFERENCES albums ON DELETE CASCADE
 );
 
 INSERT INTO songs
-  (title, duration_in_seconds, album)
+  (song, duration_in_seconds, album)
 VALUES
   ('MMMBop', 238, 1), ('Bohemian Rhapsody', 355, 2);
 
 CREATE TABLE song_artist
 (
-    song_id INTEGER REFERENCES songs ON DELETE NULL,
-    artist_id INTEGER REFERENCES artists ON DELETE NULL
+    song_id INTEGER REFERENCES songs ON DELETE CASCADE,
+    artist_id INTEGER REFERENCES artists ON DELETE CASCADE
 );
 
 INSERT INTO song_artist
@@ -65,29 +65,38 @@ INSERT INTO song_artist
 VALUES
     (1,1), (2,2);
 
-CREATE TABLE song_producer
+CREATE TABLE album_producer
 (
-    song_id INTEGER REFERENCES songs ON DELETE NULL,
-    producer_id INTEGER REFERENCES producers ON DELETE NULL
+    album_id INTEGER REFERENCES albums ON DELETE CASCADE,
+    producer_id INTEGER REFERENCES producers ON DELETE CASCADE
 );
 
-INSERT INTO song_producer
-    (song_id, producer_id)
+INSERT INTO album_producer
+    (album_id, producer_id)
 VALUES
     (1,1), (1,2), (2,3);
 
 
 
-INSERT INTO songs
-  (title, duration_in_seconds, release_date, artists, album, producers)
-VALUES
-  ('MMMBop', 238, '04-15-1997', '{"Hanson"}', 'Middle of Nowhere', '{"Dust Brothers", "Stephen Lironi"}'),
-  ('Bohemian Rhapsody', 355, '10-31-1975', '{"Queen"}', 'A Night at the Opera', '{"Roy Thomas Baker"}'),
---   ('One Sweet Day', 282, '11-14-1995', '{"Mariah Cary", "Boyz II Men"}', 'Daydream', '{"Walter Afanasieff"}'),
---   ('Shallow', 216, '09-27-2018', '{"Lady Gaga", "Bradley Cooper"}', 'A Star Is Born', '{"Benjamin Rice"}'),
---   ('How You Remind Me', 223, '08-21-2001', '{"Nickelback"}', 'Silver Side Up', '{"Rick Parashar"}'),
---   ('New York State of Mind', 276, '10-20-2009', '{"Jay Z", "Alicia Keys"}', 'The Blueprint 3', '{"Al Shux"}'),
---   ('Dark Horse', 215, '12-17-2013', '{"Katy Perry", "Juicy J"}', 'Prism', '{"Max Martin", "Cirkut"}'),
---   ('Moves Like Jagger', 201, '06-21-2011', '{"Maroon 5", "Christina Aguilera"}', 'Hands All Over', '{"Shellback", "Benny Blanco"}'),
---   ('Complicated', 244, '05-14-2002', '{"Avril Lavigne"}', 'Let Go', '{"The Matrix"}'),
---   ('Say My Name', 240, '11-07-1999', '{"Destiny''s Child"}', 'The Writing''s on the Wall', '{"Darkchild"}');
+--QUERIES CHECKS:
+
+--1. Who are producers of album "Middle of Nowhere"? 
+
+-- SELECT producer FROM producers p
+--  JOIN album_producer ap ON p.id = ap.producer_id
+--  JOIN albums a ON a.id = ap.album_id
+--  WHERE album = 'Middle of Nowhere';
+
+--2. For which songs a producer was 'Roy Thomas Baker'?
+
+-- SELECT song FROM songs s 
+--     JOIN albums x ON s.album = x.id
+-- WHERE x.id IN     
+--     (
+--         SELECT a.id FROM albums a 
+--             JOIN album_producer ap ON ap.album_id = a.id
+--             JOIN producers p ON ap.producer_id = p.id
+--         WHERE p.producer = 'Roy Thomas Baker'
+--     );
+
+

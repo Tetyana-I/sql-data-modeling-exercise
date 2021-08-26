@@ -1,5 +1,5 @@
 -- from the terminal run:
--- psql < outer_space.sql
+-- psql < outer_space_new.sql
 
 DROP DATABASE IF EXISTS outer_space;
 
@@ -22,41 +22,26 @@ VALUES
 CREATE TABLE stars
 (
     id SERIAL PRIMARY KEY,
-    star TEXT NOT NULL 
-    galaxy_id INTEGER REFERENCES galaxies ON DELETE SET NULL
+    star TEXT NOT NULL, 
+    galaxy_id INTEGER REFERENCES galaxies ON DELETE CASCADE
 );
 
 INSERT INTO stars
     (star, galaxy_id)
 VALUES
-    ('The Sun',1), ('Proxima Centauri',1), ('Gliese 876',1);
+    ('The Sun', 1), ('Proxima Centauri', 1), ('Gliese 876', 1);
 
-
-CREATE TABLE moons
-(
-    id SERIAL PRIMARY KEY,
-    moon TEXT NOT NULL,
-    planets_id INTEGER REFERENCES planets ON DELETE CASCADE
-);
-
-INSERT INTO moons
-    (moon, planets_id)
-VALUES
-    ('The Moon', 1),
-    ('Phobos', 2), ('Deimos', 2),
-    ('Naiad', 4), ('Thalassa', 4), ('Despina', 4), ('Galatea', 4), ('Larissa', 4), ('S/2004 N 1', 4),
-    ('Proteus', 4), ('Triton', 4), ('Nereid', 4), ('Halimede', 4), ('Sao', 4), ('Laomedeia', 4), ('Psamathe', 4), ('Neso', 4);
 
 CREATE TABLE planets
 (
   id SERIAL PRIMARY KEY,
-  name TEXT NOT NULL,
+  planet TEXT NOT NULL,
   orbital_period_in_years FLOAT NOT NULL,
-  orbits_around INTEGER REFERENCES stars ON DELETE SET NULL,
+  orbits_around INTEGER REFERENCES stars ON DELETE CASCADE
 );
 
 INSERT INTO planets
-  (name, orbital_period_in_years, orbits_around, galaxy, moons)
+  (planet, orbital_period_in_years, orbits_around)
 VALUES
   ('Earth', 1.00, 1),
   ('Mars', 1.88, 1),
@@ -64,3 +49,19 @@ VALUES
   ('Neptune', 164.8, 1),
   ('Proxima Centauri b', 0.03, 2),
   ('Gliese 876 b', 0.23, 3);
+
+CREATE TABLE moons
+(
+    id SERIAL PRIMARY KEY,
+    moon TEXT NOT NULL,
+    planet_id INTEGER REFERENCES planets ON DELETE CASCADE
+);
+
+INSERT INTO moons
+    (moon, planet_id)
+VALUES
+    ('The Moon', 1),
+    ('Phobos', 2), ('Deimos', 2),
+    ('Naiad', 4), ('Thalassa', 4), ('Despina', 4), ('Galatea', 4), ('Larissa', 4), ('S/2004 N 1', 4),
+    ('Proteus', 4), ('Triton', 4), ('Nereid', 4), ('Halimede', 4), ('Sao', 4), ('Laomedeia', 4), ('Psamathe', 4), ('Neso', 4);
+
