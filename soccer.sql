@@ -77,6 +77,8 @@ CREATE TABLE games
     referee_id INTEGER REFERENCES referees ON DELETE CASCADE,
     score_1 INTEGER,
     score_2 INTEGER,
+    standing_1 INTEGER,
+    standing_2 INTEGER,
     game_date DATE NOT NULL,
     season_id INTEGER REFERENCES seasons ON DELETE CASCADE
 );
@@ -174,11 +176,38 @@ SELECT * FROM seasons WHERE id = 1;
             WHERE gm.team2_id = pt.team_id
             GROUP BY gm.id, gm.team1_id, gm.team2_id) team2_score_table
         WHERE games.id = team2_score_table.id AND games.team2_id = team2_score_table.team2_id;
-    
-    SELECT * FROM games;
+
+-- Set 0 if game is played and nothing scored:    
+    SELECT * FROM games
+    ORDER BY id;
 
     UPDATE games SET score_1 = 0
     WHERE score_2 IS NOT NULL AND score_1 IS NULL;
 
--- Calculate Ranking for teams:
+-- Calculate Standing for a game for team1:
+UPDATE games SET standing_1 = CASE WHEN score_1 > score_2 THEN 2 
+                            WHEN score_1 = score_2 THEN 1
+                            WHEN score_1 < score_2 THEN 0
+                            END;
+
+UPDATE games SET standing_2 = CASE WHEN score_2 > score_1 THEN 2 
+                            WHEN score_2 = score_1 THEN 1
+                            WHEN score_2 < score_1 THEN 0
+                            END;
+-- Check the updated game table: 
+SELECT * FROM games
+ORDER BY id;
+
+--Calculate ranking for each team:
+SELECT teams.id as team_id, teams.title, SUM(standing.standing_1) as ranking FROM teams 
+    JOIN 
+    -- Join table for teams with score (scored as team1 or team2)
+        (SELECT team1_id as team_id, standing_1 FROM games
+        WHERE standing_1 IS NOT NULL
+        UNION
+        SELECT team2_id as team_id, standing_2 FROM games
+        WHERE standing_2 IS NOT NULL) standing ON standing.team_id = teams.id
+GROUP BY teams.id, teams.title
+ORDER BY  SUM(standing.standing_1) DESC;
+
 
